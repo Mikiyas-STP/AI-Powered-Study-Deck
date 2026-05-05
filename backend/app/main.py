@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 
+#import my auth runner from my register/login endpoint file(auth.py)
+from app.api.auth import router as auth_router
+
 def get_application() -> FastAPI:
     """
     Application factory pattern. 
@@ -23,7 +26,9 @@ def get_application() -> FastAPI:
             allow_methods=["*"],  # Allows GET, POST, PUT, DELETE, OPTIONS
             allow_headers=["*"],  # Allows all headers (Authorization, Content-Type, etc.)
         )
-
+    
+    #i include the router here
+    app.include_router(auth_router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
     return app
 
 app = get_application()

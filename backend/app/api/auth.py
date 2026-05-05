@@ -3,7 +3,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-
+from app.api.deps import get_current_user #to verify token functionality
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, Token
@@ -64,3 +64,13 @@ def login(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = 
         "access_token": access_token,
         "token_type": "bearer"
     }
+
+
+# section to verify token functionality
+@router.get("/me", response_model=UserResponse)
+def read_users_me(current_user: User = Depends(get_current_user)) -> Any:
+    """
+    Get current user information.
+    This route is PROTECTED. It requires a valid JWT token.
+    """
+    return current_user

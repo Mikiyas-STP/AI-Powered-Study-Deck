@@ -1,26 +1,31 @@
-# app/services/ai_service.py (MOCK VERSION)
+# app/services/ai_service.py
 import time
+from typing import List, Dict
 
 class AIService:
     @staticmethod
-    def generate_flashcards(text_content: str):
+    def generate_flashcards(text_content: str) -> List[Dict[str, str]]:
         """
-        A fake AI service that doesn't need a key.
-        Use this to test your database and React frontend first!
+        MOCK SERVICE: Simulates AI processing.
+        In a real scenario, this would call OpenAI/Groq.
         """
-        print(f"DEBUG: Mocking AI generation for text: {text_content[:20]}...")
+        # Simulate network latency (1.5 seconds)
+        time.sleep(1.5)
         
-        # Simulate a 1-second delay so it feels like AI
-        time.sleep(1) 
-        
+        # We'll return some dynamic-ish content based on the input length
+        # just to make it feel a bit more real.
         return [
             {
-                "front": "What is the capital of France?",
-                "back": "Paris"
+                "front": f"Key Concept from your notes",
+                "back": f"Detailed explanation of the text: {text_content[:30]}..."
             },
             {
-                "front": "What does PAPR stand for?",
-                "back": "PostgreSQL, API (FastAPI), Python, React"
+                "front": "PAPR Stack Definition",
+                "back": "PostgreSQL, API (FastAPI), Python, React."
+            },
+            {
+                "front": "Spaced Repetition",
+                "back": "A learning technique that performs reviews at increasing intervals."
             }
         ]
 

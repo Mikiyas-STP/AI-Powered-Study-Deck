@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.api.decks import router as deck_router
 
 #import my auth runner from my register/login endpoint file(auth.py)
 from app.api.auth import router as auth_router
@@ -29,6 +30,7 @@ def get_application() -> FastAPI:
     
     #i include the router here
     app.include_router(auth_router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
+    app.include_router(deck_router, prefix=f"{settings.API_V1_STR}/decks", tags=["Decks"])
     return app
 
 app = get_application()

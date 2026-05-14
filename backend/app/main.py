@@ -6,6 +6,7 @@ from app.api.flashcards import router as flashcard_router
 #import my auth runner from my register/login endpoint file(auth.py)
 from app.api.auth import router as auth_router
 
+
 def get_application() -> FastAPI:
     """
     Application factory pattern. 

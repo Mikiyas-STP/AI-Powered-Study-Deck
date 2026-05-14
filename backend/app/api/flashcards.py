@@ -9,7 +9,7 @@ from app.models.flashcard import Flashcard
 from app.models.deck import Deck
 from app.api.deps import get_current_user
 from app.models.user import User
-from app.services.ai_service import ai_service
+from app.services.ai_services import ai_services
 from app.schemas.deck import FlashcardResponse, AIRequest
 
 router = APIRouter()
@@ -33,7 +33,7 @@ def generate_cards_from_text(
         )
 
     # 2. Call the AI Service (The Mock)
-    generated_data = ai_service.generate_flashcards(data.text_content)
+    generated_data = ai_services.generate_flashcards(data.text_content)
 
     # 3. Save to Database
     new_cards = []

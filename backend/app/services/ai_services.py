@@ -29,4 +29,4 @@ class AIService:
             }
         ]
 
-ai_service = AIService()
+ai_services = AIService()

@@ -39,3 +39,7 @@ class DeckResponse(DeckBase):
 # This schema is for when we want to see a Deck AND all its cards
 class DeckWithCards(DeckResponse):
     flashcards: List[FlashcardResponse] = []
+
+
+class AIRequest(BaseModel):
+    text_content: str

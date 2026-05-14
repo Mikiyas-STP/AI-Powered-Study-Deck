@@ -1,7 +1,7 @@
 # app/api/flashcards.py
 import uuid
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -10,29 +10,32 @@ from app.models.deck import Deck
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.services.ai_service import ai_service
-from app.schemas.deck import FlashcardResponse
+from app.schemas.deck import FlashcardResponse, AIRequest
 
 router = APIRouter()
 
-@router.post("/generate/{deck_id}", response_model=List[FlashcardResponse])
+@router.post("/generate/{deck_id}", response_model=List[FlashcardResponse], status_code=status.HTTP_201_CREATED)
 def generate_cards_from_text(
     deck_id: uuid.UUID,
-    text_content: str, # In a real app, this would be in a Pydantic body
+    data: AIRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """
-    Takes raw text, sends it to AI, and saves the resulting cards to the database.
+    Takes raw text, 'processes' it via Mock AI, and saves cards to the DB.
     """
-    # 1. Verify the deck exists and belongs to the user
+    # 1. Security Check: Does the deck exist and does the user own it?
     deck = db.query(Deck).filter(Deck.id == deck_id, Deck.user_id == current_user.id).first()
     if not deck:
-        raise HTTPException(status_code=404, detail="Deck not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Deck not found or you do not have permission to access it."
+        )
 
-    # 2. Call the AI Service
-    generated_data = ai_service.generate_flashcards(text_content)
+    # 2. Call the AI Service (The Mock)
+    generated_data = ai_service.generate_flashcards(data.text_content)
 
-    # 3. Create Flashcard objects and save to DB
+    # 3. Save to Database
     new_cards = []
     for item in generated_data:
         card = Flashcard(
@@ -45,7 +48,7 @@ def generate_cards_from_text(
     
     db.commit()
     
-    # Refresh to get IDs and timestamps
+    # Refresh to get the generated UUIDs and timestamps from Postgres
     for card in new_cards:
         db.refresh(card)
 

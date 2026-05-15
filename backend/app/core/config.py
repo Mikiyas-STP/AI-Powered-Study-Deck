@@ -5,7 +5,7 @@ from typing import List
 class Settings(BaseSettings):
     PROJECT_NAME: str = "PAPR Portfolio API"
     API_V1_STR: str = "/api/v1"
-    
+    OPENAI_API_KEY: str = "your-key-here"
     # CORS Configuration for React
     # In production, this should be restricted to the  actual frontend domain
     BACKEND_CORS_ORIGINS: List[str] =["http://localhost:3000", "http://localhost:5173"]

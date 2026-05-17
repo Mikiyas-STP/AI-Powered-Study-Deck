@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL:'https://dn9i2x9ksab24e295tbyjqji.hosting.codeyourfuture.io' ,
+  baseURL:'https://dn9i2x9ksab24e295tbyjqji.hosting.codeyourfuture.io/api/v1' ,
 });
 
 // Automatically add JWT token to every request

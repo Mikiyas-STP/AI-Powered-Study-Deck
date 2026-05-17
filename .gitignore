@@ -1,12 +1,21 @@
-# Virtual environment
+# --- Python ---
 venv/
-
-# Python cache
+.venv/
 __pycache__/
-*.pyc
-
-# Environment variables
+*.py[cod]
+.pytest_cache/
 .env
 
-# MacOS
+# --- JavaScript / React ---
+node_modules/
+dist/
+.eslintcache
 .DS_Store
+
+# --- Database ---
+*.db
+alembic/versions/*.pyc
+
+# --- IDEs ---
+.vscode/
+.idea/

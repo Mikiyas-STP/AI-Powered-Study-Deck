@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = "your-key-here"
     # CORS Configuration for React
     # In production, this should be restricted to the  actual frontend domain
-    BACKEND_CORS_ORIGINS: List[str] =["http://localhost:3000", "http://localhost:5173","https://dn9i2x9ksab24e295tbyjqji.hosting.codeyourfuture.io"]
+    BACKEND_CORS_ORIGINS: List[str] =["*"]
     
     # Database
     POSTGRES_USER: str = "postgres"

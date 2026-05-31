@@ -12,6 +12,10 @@ class FlashcardBase(BaseModel):
 class FlashcardCreate(FlashcardBase):
     pass
 
+class FlashcardUpdate(BaseModel):
+    front: Optional[str] = None
+    back: Optional[str] = None
+
 class FlashcardResponse(FlashcardBase):
     id: uuid.UUID
     deck_id: uuid.UUID

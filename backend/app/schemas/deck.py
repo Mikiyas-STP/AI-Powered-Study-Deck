@@ -47,3 +47,10 @@ class DeckWithCards(DeckResponse):
 
 class AIRequest(BaseModel):
     text_content: str
+
+class RephraseRequest(BaseModel):
+    front : str
+    back : str
+class RephraseResponse(BaseModel):
+    front : str
+    back : str

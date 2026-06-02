@@ -37,4 +37,41 @@ class AIService:
             print(f"AI Error: {e}")
             return []
 
+    @staticmethod
+    def rephrase_flashcard(front_text:str, back_text:str) -> dict:
+        """
+        Sends front and back text of a flashcard to Groq AI to rephrase and improve it.
+        If it fails or if the key is invalid, returns a mocked offline fallback.
+        """
+        prompt = f"""
+        You are an expert copyeditor. Refine and polish this study flashcard.
+        Fix any grammatical errors, simplify the language to be clear and easy to understand, and make it concise, but preserve the original educational intent and scope.
+        Return ONLY a JSON object with "front" and "back" keys.
+        
+        Original Card :
+        Front: {front_text}
+        Back: {back_text}
+        """
+        try:
+            if not settings.OPENAI_API_KEY or "your_groq_api_key" in settings.OPENAI_API_KEY:
+                raise ValueError("Missing or invalid Groq API Key")
+            response = client.chat.completions.create(
+                model = "llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                response_format={"type": "json_object"}
+            )
+            content = response.choices[0].message.content
+            data = json.loads(content)
+            
+            if "front" in data and "back" in data:
+                return data
+            raise ValueError("Invalid JSON response structure from AI")
+        except Exception as e:
+            print(f"AI Rephrase Error: {e}")
+            return {
+                "front": f"[AI Optimized]{front_text.strip()}",
+                "back": f"[AI Optimized]{back_text.strip()}"
+            }
+
+        
 ai_services = AIService()

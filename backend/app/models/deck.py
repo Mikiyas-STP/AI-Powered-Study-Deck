@@ -16,3 +16,5 @@ class Deck(Base):
     # Relationships
     owner = relationship("User", back_populates="decks")
     flashcards = relationship("Flashcard", back_populates="deck", cascade="all, delete-orphan")
+
+ 

@@ -8,7 +8,7 @@ from app.db.session import get_db
 from app.models.deck import Deck
 from app.models.user import User
 from app.schemas.deck import DeckCreate, DeckResponse, DeckWithCards
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_current_deck
 
 router = APIRouter()
 
@@ -39,12 +39,7 @@ def list_decks(
 
 @router.get("/{deck_id}", response_model=DeckWithCards)
 def get_deck(
-    deck_id: uuid.UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    deck: Deck = Depends(get_current_deck)
 ) -> Any:
     """Get a specific deck by ID, including its flashcards."""
-    deck = db.query(Deck).filter(Deck.id == deck_id, Deck.user_id == current_user.id).first()
-    if not deck:
-        raise HTTPException(status_code=404, detail="Deck not found")
     return deck

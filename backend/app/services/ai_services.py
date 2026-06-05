@@ -35,7 +35,7 @@ class AIService:
             return data.get("flashcards", [])
         except Exception as e:
             print(f"AI Error: {e}")
-            return []
+            raise e
 
     @staticmethod
     def rephrase_flashcard(front_text:str, back_text:str) -> dict:
@@ -68,10 +68,7 @@ class AIService:
             raise ValueError("Invalid JSON response structure from AI")
         except Exception as e:
             print(f"AI Rephrase Error: {e}")
-            return {
-                "front": f"[AI Optimized]{front_text.strip()}",
-                "back": f"[AI Optimized]{back_text.strip()}"
-            }
+            raise e
 
         
 ai_services = AIService()

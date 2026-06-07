@@ -1,4 +1,5 @@
 # i will create a reusable dependency for my routes here in deps.py
+import uuid
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
@@ -8,6 +9,7 @@ from pydantic import ValidationError
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import User
+from app.models.deck import Deck
 
 # This tells FastAPI where the client can get a token.
 # It automatically hooks into the Swagger UI "Authorize" button!
@@ -51,3 +53,17 @@ def get_current_user(
         raise HTTPException(status_code=400, detail="Inactive user")
         
     return user
+
+
+def get_current_deck(
+    deck_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Deck:
+    deck = db.query(Deck).filter(Deck.id == deck_id, Deck.user_id == current_user.id).first()
+    if not deck:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Deck not found or you do not have permission to access it."
+        )
+    return deck

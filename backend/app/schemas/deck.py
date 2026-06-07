@@ -2,15 +2,35 @@
 import uuid
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 # --- Flashcard Schemas ---
 class FlashcardBase(BaseModel):
     front: str
     back: str
 
+    @field_validator('front', 'back')
+    @classmethod
+    def validate_non_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Field cannot be empty or contain only whitespace")
+        return v.strip()
+
 class FlashcardCreate(FlashcardBase):
     pass
+
+class FlashcardUpdate(BaseModel):
+    front: Optional[str] = None
+    back: Optional[str] = None
+
+    @field_validator('front', 'back')
+    @classmethod
+    def validate_non_empty(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            if not v.strip():
+                raise ValueError("Field cannot be empty or contain only whitespace")
+            return v.strip()
+        return v
 
 class FlashcardResponse(FlashcardBase):
     id: uuid.UUID
@@ -23,6 +43,13 @@ class FlashcardResponse(FlashcardBase):
 class DeckBase(BaseModel):
     title: str
     description: Optional[str] = None
+
+    @field_validator('title')
+    @classmethod
+    def validate_non_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Title cannot be empty or contain only whitespace")
+        return v.strip()
 
 class DeckCreate(DeckBase):
     pass
@@ -43,3 +70,16 @@ class DeckWithCards(DeckResponse):
 
 class AIRequest(BaseModel):
     text_content: str
+
+    @field_validator('text_content')
+    @classmethod
+    def validate_non_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Text content cannot be empty or contain only whitespace")
+        return v.strip()
+
+class RephraseRequest(FlashcardBase):
+    pass
+
+class RephraseResponse(FlashcardBase):
+    pass

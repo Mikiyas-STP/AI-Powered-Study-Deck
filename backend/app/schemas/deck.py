@@ -83,3 +83,24 @@ class RephraseRequest(FlashcardBase):
 
 class RephraseResponse(FlashcardBase):
     pass
+
+class ClarifyRequest(BaseModel):
+    front: str
+    back: str
+
+    @field_validator('front', 'back')
+    @classmethod
+    def validate_non_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Field cannot be empty or contain only whitespace")
+        return v.strip()
+
+class ClarifyResponse(BaseModel):
+    clarification: str
+    
+    @field_validator('clarification')
+    @classmethod
+    def validate_non_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Clarification cannot be empty or contain only whitespace")
+        return v.strip()

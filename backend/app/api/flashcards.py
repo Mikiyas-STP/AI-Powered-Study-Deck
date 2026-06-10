@@ -10,7 +10,7 @@ from app.models.deck import Deck
 from app.api.deps import get_current_user, get_current_deck
 from app.models.user import User
 from app.services.ai_services import ai_services
-from app.schemas.deck import FlashcardResponse, AIRequest, FlashcardCreate, FlashcardUpdate,RephraseRequest,RephraseResponse
+from app.schemas.deck import FlashcardResponse, AIRequest, FlashcardCreate, FlashcardUpdate,RephraseRequest,RephraseResponse,ClarifyRequest,ClarifyResponse
 
 router = APIRouter()
 
@@ -130,4 +130,15 @@ def delete_card(
     db.delete(card)
     db.commit()
     return card
+
+@router.post("/clarify", response_model=ClarifyResponse)
+def clarify_card(data:ClarifyRequest,current_user = Depends(get_current_user)):
+    try:
+        clarification = ai_services.clarify_flashcard(data.front,data.back)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI service unavailable"
+        )
+    return clarification
 

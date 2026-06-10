@@ -70,5 +70,32 @@ class AIService:
             print(f"AI Rephrase Error: {e}")
             raise e
 
+    @staticmethod
+    def clarify_flashcard(front_text:str, back_text:str) -> dict:
+        prompt = f""" You are an expert tutor. A student is studying a flashcard and needs more clarification on the concept.
+        Original Card :
+        Front: {front_text}
+        Back: {back_text}
+
+        Provide a clear,detailed explanation/clarification of this concept.
+        Keep it accurate and easy to understand. Keep it concise (1-2 paragraphs) but sufficiently detailed to resolve confusion.
+        Return ONLY a JSON object with a key "clarification" containing the explanation..
+        """
+        
+        try:
+            response = client.chat.completions.create(
+                model = "llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                response_format={"type": "json_object"}
+            )
+            content = response.choices[0].message.content
+            data = json.loads(content)
+            if "clarification" in data:
+                return data
+            raise ValueError("Invalid JSON Response structure from AI")
+        except Exception as e:
+            print(f"AI Clarification Error: {e}")
+            raise e
+
         
 ai_services = AIService()

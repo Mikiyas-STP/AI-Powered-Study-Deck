@@ -2,6 +2,7 @@
 import uuid
 from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -10,7 +11,7 @@ from app.models.deck import Deck
 from app.api.deps import get_current_user, get_current_deck
 from app.models.user import User
 from app.services.ai_services import ai_services
-from app.schemas.deck import FlashcardResponse, AIRequest, FlashcardCreate, FlashcardUpdate,RephraseRequest,RephraseResponse
+from app.schemas.deck import FlashcardResponse, AIRequest, FlashcardCreate, FlashcardUpdate,RephraseRequest,RephraseResponse,ClarifyRequest,ClarifyResponse
 
 router = APIRouter()
 
@@ -31,6 +32,17 @@ def create_manual_card(
     deck: Deck = Depends(get_current_deck),
     db: Session = Depends(get_db)
 ) -> Any:
+    existing_card = db.query(Flashcard).filter(
+        Flashcard.deck_id == deck.id,
+        func.lower(Flashcard.front) == func.lower(card_in.front)
+    ).first()
+    
+    if existing_card:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A flashcard with this front text already exists in this deck."
+        )
+
     card = Flashcard(
         front=card_in.front,
         back=card_in.back,
@@ -58,9 +70,16 @@ def generate_cards_from_text(
             detail="AI service unavailable"
         )
 
-    # 3. Save to Database
     new_cards = []
     for item in generated_data:
+        existing_card = db.query(Flashcard).filter(
+            Flashcard.deck_id == deck.id,
+            func.lower(Flashcard.front) == func.lower(item["front"])
+        ).first()
+        
+        if existing_card:
+            continue
+
         card = Flashcard(
             front=item["front"],
             back=item["back"],
@@ -69,11 +88,11 @@ def generate_cards_from_text(
         db.add(card)
         new_cards.append(card)
     
-    db.commit()
-    
-    # Refresh to get the generated UUIDs and timestamps from Postgres
-    for card in new_cards:
-        db.refresh(card)
+    if new_cards:
+        db.commit()
+        # Refresh to get the generated UUIDs and timestamps from Postgres
+        for card in new_cards:
+            db.refresh(card)
 
     return new_cards
 
@@ -99,6 +118,16 @@ def update_card(
         )
     
     if card_in.front is not None:
+        existing_card = db.query(Flashcard).filter(
+            Flashcard.deck_id == card.deck_id,
+            Flashcard.id != card.id,
+            func.lower(Flashcard.front) == func.lower(card_in.front)
+        ).first()
+        if existing_card:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A flashcard with this front text already exists in this deck."
+            )
         card.front = card_in.front
     if card_in.back is not None:
         card.back = card_in.back
@@ -130,4 +159,15 @@ def delete_card(
     db.delete(card)
     db.commit()
     return card
+
+@router.post("/clarify", response_model=ClarifyResponse)
+def clarify_card(data:ClarifyRequest,current_user = Depends(get_current_user)):
+    try:
+        clarification = ai_services.clarify_flashcard(data.front,data.back)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI service unavailable"
+        )
+    return clarification
 

@@ -17,6 +17,31 @@ const[editFront, setEditFront] = useState("");
 const[editBack, setEditBack] = useState("");
 const[isUpdatingCard, setIsUpdatingCard] = useState(false);
 const[isRefining, setIsRefining] = useState(false);
+const[clarificationText, setClarificationText] = useState({});
+const[isLoadingClarification, setIsLoadingClarification] = useState({});
+
+const handleGetClarification = async(card)=>{
+  if (clarificationText[card.id]) {
+    setClarificationText(prev => {
+      const copy = {...prev};
+      delete copy[card.id];
+      return copy;
+    });
+    return;
+  }
+  setIsLoadingClarification(prev => ({...prev, [card.id]: true}));
+  try {
+    const response = await apiClient.post('/flashcards/clarify', {
+      front: card.front,
+      back: card.back
+    });
+    setClarificationText(prev => ({ ...prev, [card.id]: response.data.clarification }));
+  } catch (error) {
+    alert("Failed to get clarification.");
+  } finally {
+    setIsLoadingClarification(prev => ({ ...prev, [card.id]: false }));
+  }
+}
 
 const handleCreateManual = async () => {
   if (!manualFront.trim() || !manualBack.trim()) return;
@@ -312,6 +337,13 @@ const handleDeleteCard = async (cardId) => {
                     {/* Hover actions menu (Absolute top-right corner) */}
                     <div className="absolute top-3 right-3 flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
                       <button 
+                        onClick={() => handleGetClarification(card)} 
+                        className="p-1.5 bg-white text-gray-500 hover:text-amber-500 rounded-lg border shadow-sm transition"
+                        title="Clarify with AI"
+                      >
+                        💡
+                      </button>
+                      <button 
                         onClick={() => handleStartEdit(card)} 
                         className="p-1.5 bg-white text-gray-500 hover:text-blue-600 rounded-lg border shadow-sm transition"
                         title="Edit Flashcard"
@@ -337,6 +369,33 @@ const handleDeleteCard = async (cardId) => {
                         <p className="mt-2 text-gray-700 whitespace-pre-wrap">{card.back}</p>
                       </div>
                     </div>
+
+                    {/* Clarification Drawer */}
+                    {(isLoadingClarification[card.id] || clarificationText[card.id]) && (
+                      <div className="p-4 bg-amber-50 border-t border-amber-100 text-sm text-gray-700">
+                        <div className="font-bold text-amber-800 flex items-center gap-1.5 mb-1">
+                          <span>💡 AI Explanation & Clarification</span>
+                        </div>
+                        {isLoadingClarification[card.id] ? (
+                          <span className="text-gray-400 italic">Thinking...</span>
+                        ) : (
+                          <div>
+                            <p className="leading-relaxed whitespace-pre-wrap">{clarificationText[card.id]}</p>
+                            <button
+                              onClick={() => {
+                                // Option to append this explanation to the card back
+                                setEditingCard(card);
+                                setEditFront(card.front);
+                                setEditBack(`${card.back}\n\n[Explanation]:\n${clarificationText[card.id]}`);
+                              }}
+                              className="mt-2 text-xs font-bold text-blue-600 hover:underline animate-pulse"
+                            >
+                              ✏️ Append explanation to card back
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
               </div>

@@ -2,11 +2,19 @@
 # app/schemas/user.py
 import uuid
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
 
 # Shared properties
 class UserBase(BaseModel):
     email: EmailStr  # Automatically validates that the string is a valid email format
+    username: str 
+
+    @field_validator('email', mode='before')
+    @classmethod
+    def lowercase_email(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 # Properties to receive via API on creation (React -> FastAPI)
 class UserCreate(UserBase):

@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
           setUser(response.data);
         } catch (error) {
           localStorage.removeItem('token');
+          setUser(null);
         }
       }
       setLoading(false);
@@ -34,9 +35,19 @@ export const AuthProvider = ({ children }) => {
     const response = await apiClient.post('/auth/login', formData);
     const { access_token } = response.data;
     
+    if (!access_token) {
+      throw new Error('No token received from server');
+    }
     localStorage.setItem('token', access_token);
-    const userResponse = await apiClient.get('/auth/me');
+    try{
+      const userResponse = await apiClient.get('/auth/me');
     setUser(userResponse.data);
+    }catch(error){
+      localStorage.removeItem('token');
+      setUser(null);
+      throw new Error('Login failed');
+    }
+    
   };
 
   const logout = () => {

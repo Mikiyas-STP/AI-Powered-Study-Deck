@@ -26,33 +26,6 @@ def rephrase_card(data: RephraseRequest, current_user = Depends(get_current_user
             detail="AI service unavailable"
         )
 
-@router.post("/{deck_id}", response_model=FlashcardResponse, status_code=status.HTTP_201_CREATED)
-def create_manual_card(
-    card_in: FlashcardCreate,
-    deck: Deck = Depends(get_current_deck),
-    db: Session = Depends(get_db)
-) -> Any:
-    existing_card = db.query(Flashcard).filter(
-        Flashcard.deck_id == deck.id,
-        func.lower(Flashcard.front) == func.lower(card_in.front)
-    ).first()
-    
-    if existing_card:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A flashcard with this front text already exists in this deck."
-        )
-
-    card = Flashcard(
-        front=card_in.front,
-        back=card_in.back,
-        deck_id=deck.id
-    )
-    db.add(card)
-    db.commit()
-    db.refresh(card)
-    return card
-
 @router.post("/generate/{deck_id}", response_model=List[FlashcardResponse], status_code=status.HTTP_201_CREATED)
 def generate_cards_from_text(
     data: AIRequest,
@@ -95,6 +68,44 @@ def generate_cards_from_text(
             db.refresh(card)
 
     return new_cards
+
+@router.post("/clarify", response_model=ClarifyResponse)
+def clarify_card(data:ClarifyRequest,current_user = Depends(get_current_user)):
+    try:
+        clarification = ai_services.clarify_flashcard(data.front,data.back)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI service unavailable"
+        )
+    return clarification
+
+@router.post("/{deck_id}", response_model=FlashcardResponse, status_code=status.HTTP_201_CREATED)
+def create_manual_card(
+    card_in: FlashcardCreate,
+    deck: Deck = Depends(get_current_deck),
+    db: Session = Depends(get_db)
+) -> Any:
+    existing_card = db.query(Flashcard).filter(
+        Flashcard.deck_id == deck.id,
+        func.lower(Flashcard.front) == func.lower(card_in.front)
+    ).first()
+    
+    if existing_card:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A flashcard with this front text already exists in this deck."
+        )
+
+    card = Flashcard(
+        front=card_in.front,
+        back=card_in.back,
+        deck_id=deck.id
+    )
+    db.add(card)
+    db.commit()
+    db.refresh(card)
+    return card
 
 @router.put("/{card_id}", response_model=FlashcardResponse)
 def update_card(
@@ -159,15 +170,4 @@ def delete_card(
     db.delete(card)
     db.commit()
     return card
-
-@router.post("/clarify", response_model=ClarifyResponse)
-def clarify_card(data:ClarifyRequest,current_user = Depends(get_current_user)):
-    try:
-        clarification = ai_services.clarify_flashcard(data.front,data.back)
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="AI service unavailable"
-        )
-    return clarification
 

@@ -21,6 +21,14 @@ const[clarificationText, setClarificationText] = useState({});
 const[isLoadingClarification, setIsLoadingClarification] = useState({});
 
 const handleGetClarification = async(card)=>{
+  const front = typeof card.front === 'string' ? card.front.trim() : '';
+  const back = typeof card.back === 'string' ? card.back.trim() : '';
+
+  if (!front || !back) {
+    alert('This card does not have enough text to clarify.');
+    return;
+  }
+
   if (clarificationText[card.id]) {
     setClarificationText(prev => {
       const copy = {...prev};
@@ -32,12 +40,12 @@ const handleGetClarification = async(card)=>{
   setIsLoadingClarification(prev => ({...prev, [card.id]: true}));
   try {
     const response = await apiClient.post('/flashcards/clarify', {
-      front: card.front,
-      back: card.back
+      front,
+      back
     });
     setClarificationText(prev => ({ ...prev, [card.id]: response.data.clarification }));
-  } catch (error) {
-    alert("Failed to get clarification.");
+  } catch {
+      alert("Failed to get clarification.");
   } finally {
     setIsLoadingClarification(prev => ({ ...prev, [card.id]: false }));
   }
@@ -55,8 +63,8 @@ const handleCreateManual = async () => {
     setManualBack("");
     setIsCreatingManual(false);
     fetchDeck();
-  } catch (error) {
-    alert("Failed to create manual flashcard.");
+  } catch {
+      alert("Failed to create manual flashcard.");
   }finally{
     setIsCreatingManual(false);
   }
@@ -73,8 +81,8 @@ const handleRephrase= async()=>{
    setManualFront(response.data.front);
    setManualBack(response.data.back);
    alert("Card rephrased successfully!")
-  } catch (error) {
-    alert("Failed to rephrase flashcard.");
+  } catch {
+     alert("Failed to rephrase flashcard.");
   }finally{
     setIsRefining(false);
   }
@@ -101,8 +109,8 @@ const handleUpdateCard = async () => {
     });
     setEditingCard(null);
     fetchDeck();
-  } catch (error) {
-    alert("Failed to update flashcard.");
+  } catch {
+      alert("Failed to update flashcard.");
   }finally{
     setIsUpdatingCard(false);
   }
@@ -113,8 +121,8 @@ const handleDeleteCard = async (cardId) => {
   try {
     await apiClient.delete(`/flashcards/${cardId}`);
     fetchDeck();
-  } catch (error) {
-    alert("Failed to delete flashcard.");
+  } catch {
+     alert("Failed to delete flashcard.");
   }
 };
   const [deck, setDeck] = useState(null);
@@ -125,7 +133,7 @@ const handleDeleteCard = async (cardId) => {
     try {
       const response = await apiClient.get(`/decks/${deckId}`);
       setDeck(response.data);
-    } catch (error) {
+    } catch {
       navigate('/dashboard');
     }
   };
@@ -142,8 +150,8 @@ const handleDeleteCard = async (cardId) => {
       await apiClient.post(`/flashcards/generate/${deckId}`, { text_content: textContent });
       setTextContent('');
       fetchDeck(); // Refresh to show the new cards
-    } catch (error) {
-      alert("AI Generation failed. Ensure your backend is running.");
+    } catch {
+        alert("AI Generation failed. Ensure your backend is running.");
     } finally {
       setIsGenerating(false);
     }

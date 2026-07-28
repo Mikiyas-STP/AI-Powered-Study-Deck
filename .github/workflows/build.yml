@@ -1,0 +1,19 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      ACR_REGISTRY: application1.azurecr.io 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+    
+      - name: login to Azure

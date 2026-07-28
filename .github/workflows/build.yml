@@ -15,5 +15,25 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-    
+  
       - name: login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }} 
+      
+      - name: login to ACR
+        run: az acr login --name ${{ env.ACR_REGISTRY }}
+        
+      - name: Build and push Backend Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ env.ACR_REGISTRY }}/backend:latest
+
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ env.ACR_REGISTRY }}/frontend:latest

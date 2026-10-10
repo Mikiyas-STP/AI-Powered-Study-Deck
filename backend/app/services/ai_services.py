@@ -24,7 +24,7 @@ class AIService:
 
         try:
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile", # One of the fastest models on Groq
+                model="openai/gpt-oss-120b", # One of the fastest models on Groq
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"}
             )
@@ -56,7 +56,7 @@ class AIService:
             if not settings.OPENAI_API_KEY or "your_groq_api_key" in settings.OPENAI_API_KEY:
                 raise ValueError("Missing or invalid Groq API Key")
             response = client.chat.completions.create(
-                model = "llama-3.3-70b-versatile",
+                model = "openai/gpt-oss-120b",
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"}
             )
@@ -84,7 +84,7 @@ class AIService:
         
         try:
             response = client.chat.completions.create(
-                model = "llama-3.3-70b-versatile",
+                model = "openai/gpt-oss-120b",
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"}
             )

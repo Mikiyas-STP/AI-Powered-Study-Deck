@@ -5,7 +5,8 @@ from app.core.config import settings
 # Groq is OpenAI-compatible. We just point the 'base_url' to Groq's servers.
 client = OpenAI(
     api_key=settings.OPENAI_API_KEY,
-    base_url="https://api.groq.com/openai/v1"
+    base_url="https://api.openai.com/v1"
+
 )
 
 class AIService:
